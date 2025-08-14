@@ -4,7 +4,84 @@ import { Suspense } from 'react'
 import Table from '@/components/table'
 import TablePlaceholder from '@/components/table-placeholder'
 import ExpandingArrow from '@/components/expanding-arrow'
+import { db, GeneratedImagesTable } from '@/lib/drizzle'
+import { Fragment } from 'react'
+import { desc } from 'drizzle-orm'
 
+// Simple Nav component
+function Nav() {
+  return (
+    <nav className="w-full py-4 px-8 flex justify-between items-center bg-white/80 shadow-sm mb-8">
+      <Link href="/" className="text-xl font-bold text-gray-800">
+        Home
+      </Link>
+      <div className="space-x-6">
+        <Link href="#users" className="hover:underline text-gray-700">
+          Users
+        </Link>
+        <Link href="#images" className="hover:underline text-gray-700">
+          Images
+        </Link>
+        <Link href="https://github.com/drizzle-team/drizzle-orm" className="hover:underline text-gray-700" target="_blank" rel="noopener noreferrer">
+          Drizzle ORM
+        </Link>
+      </div>
+    </nav>
+  )
+}
+
+// Simple Footer component
+function Footer() {
+  return (
+    <footer className="w-full py-6 mt-16 bg-white/80 text-center text-gray-500 text-sm border-t">
+      &copy; {new Date().getFullYear()} Postgres on Vercel Demo. Built with Next.js & Drizzle ORM.
+    </footer>
+  )
+}
+
+// Async component to display generated images
+async function GeneratedImagesList() {
+  const images = await db
+    .select()
+    .from(GeneratedImagesTable)
+    .orderBy(desc(GeneratedImagesTable.createdAt))
+    .limit(12)
+
+  if (!images.length) {
+    return <div className="text-gray-500 text-center py-8">No generated images found.</div>
+  }
+  return (
+    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 py-8">
+      {images.map((img) => (
+        <div key={img.id} className="bg-white/60 rounded-lg shadow p-4 flex flex-col items-center">
+          <div className="w-full h-48 flex items-center justify-center mb-3">
+            <Image
+              src={img.thumbnailUrl || img.imageUrl}
+              alt={img.prompt || 'Generated image'}
+              width={256}
+              height={192}
+              className="rounded-md object-cover max-h-48"
+              style={{ maxWidth: '100%', height: 'auto' }}
+            />
+          </div>
+          <div className="w-full">
+            <p className="text-xs text-gray-700 truncate mb-1" title={img.prompt}>{img.prompt}</p>
+            <div className="flex justify-between text-xs text-gray-400">
+              <span>{img.model}</span>
+              <span>
+                {img.createdAt
+                  ? new Date(img.createdAt as string | number | Date).toLocaleDateString()
+                  : ''}
+              </span>
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+export { Nav, Footer, GeneratedImagesList }
 export const dynamic = 'force-dynamic'
 
 export default function Home() {

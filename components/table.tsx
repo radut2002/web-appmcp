@@ -44,8 +44,8 @@ export default async function Table() {
           >
             <div className="flex items-center space-x-4">
               <Image
-                src={user.image}
-                alt={user.name}
+                src={user.avatarUrl ?? '/default-avatar.png'}
+                alt={user.name ?? 'User'}
                 width={48}
                 height={48}
                 className="rounded-full ring-1 ring-gray-900/5"
@@ -55,7 +55,9 @@ export default async function Table() {
                 <p className="text-sm text-gray-500">{user.email}</p>
               </div>
             </div>
-            <p className="text-sm text-gray-500">{timeAgo(user.createdAt)}</p>
+            <p className="text-sm text-gray-500">
+              {user.createdAt ? timeAgo(user.createdAt) : 'Unknown'}
+            </p>
           </div>
         ))}
       </div>
